@@ -12,17 +12,29 @@ public class HexGrid : MonoBehaviour
 	[Tooltip("Cantidad de celdas de la grilla (filas)")]
 	public int rows = 6;
 
-	// TODO: Deberia de ser creado proceduralmente, no por prefab
+	// TODO: Replace to private, as array and set colors.
+	public Color defaultColor = Color.white;
+	public Color touchedColor = Color.red;
+
+	// TODO: Podria ser totalmente creado de manera procedural, sin prefab
 	public HexCell cellPrefab;
 
 	private HexCell[] cells;
 
+	HexMesh hexMesh;
+
 	void Awake()
     {
-        cells = new HexCell[rows * columns];
-
+		cells = new HexCell[rows * columns];
         CreateGrid();
+
+		hexMesh = GetComponentInChildren<HexMesh>();
     }
+
+    private void Start()
+    {
+		hexMesh.Triangulate(cells);
+	}
 
     private void CreateGrid()
     {
@@ -35,7 +47,6 @@ public class HexGrid : MonoBehaviour
         }
     }
 
-    // TODO: Replace cellprefab with primitive plane
 	// Cell Placement
     void CreateCell(int x, int z, int i)
 	{
@@ -49,6 +60,42 @@ public class HexGrid : MonoBehaviour
 		HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab);
 		cell.transform.SetParent(transform, false);
 		cell.transform.localPosition = position;
+
+		cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
+		cell.color = defaultColor;
+	}
+
+
+	// FIXME: Provisorio. Mover de script (Touch Cell -> ChangeColor // Raycast.cs // OnCellClicked Event
+	void Update()
+	{
+		if (Input.GetMouseButton(0))
+		{
+			HandleInput();
+		}
+	}
+
+	void HandleInput()
+	{
+		Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
+		if (Physics.Raycast(inputRay, out hit))
+		{
+			TouchCell(hit.point);
+		}
+	}
+
+	void TouchCell(Vector3 position)
+	{
+		position = transform.InverseTransformPoint(position);
+		HexCoordinates coordinates = HexCoordinates.FromPosition(position); // convert the touch position to hex coordinates
+		Debug.Log("touched at " + coordinates.ToString());
+
+		// FIXME: triangulates the entire mesh, instead of updating only a cell
+		int index = coordinates.X + coordinates.Z * rows + coordinates.Z / 2;
+		HexCell cell = cells[index];
+		cell.color = touchedColor;
+		hexMesh.Triangulate(cells);
 	}
 }
 
@@ -64,6 +111,7 @@ public static class HexMetrics
 		new Vector3(innerRadius, 0f, -0.5f * outerRadius),		// Corner 3
 		new Vector3(0f, 0f, -outerRadius),						// Corner 4
 		new Vector3(-innerRadius, 0f, -0.5f * outerRadius),		// Corner 5
-		new Vector3(-innerRadius, 0f, 0.5f * outerRadius)		// Corner 6
+		new Vector3(-innerRadius, 0f, 0.5f * outerRadius),		// Corner 6
+		new Vector3(0f, 0f, outerRadius) // Corner 1
 	};
 }
