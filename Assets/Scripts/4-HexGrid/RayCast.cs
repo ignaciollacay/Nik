@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class RayCast : MonoBehaviour
 {
-    //[SerializeField] private Transform raycastDebugVisual;
     private Camera playerCamera;
 
     private void Awake()
@@ -16,18 +15,17 @@ public class RayCast : MonoBehaviour
             Raycast();
     }
 
+    // TODO: Event with RayCastHit parameter
+    // a) subscription from cell -> change color
+    // b) subscription from grid -> get Vector3 position -> convert to coordinates -> Get Cell -> change color
     private void Raycast()
     {
-        Debug.Log("Player Clicked");
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit raycastHit))
         {
-            //raycastDebugVisual.position = raycastHit.point;
-
             if (raycastHit.collider.TryGetComponent(out Cell cell))
             {
-                cell.ChangeColor();
-                Debug.Log("Player Clicked Cell");
+                cell.SetNextColor();
             }
         }
     }

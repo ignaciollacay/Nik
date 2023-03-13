@@ -20,6 +20,7 @@ public class MeshHexagonal : MonoBehaviour
 		mesh.name = "Hex Mesh";
 	}
 
+	// tODO: Refactor corners with HexDirs
 	public void Triangulate()
 	{
 		Vector3 center = transform.position;

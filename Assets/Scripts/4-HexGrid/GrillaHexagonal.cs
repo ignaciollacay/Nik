@@ -11,7 +11,20 @@ public class GrillaHexagonal : MonoBehaviour
 	[Tooltip("Cantidad de celdas de la grilla (filas)")]
 	public int rows = 6;
 
-	Cell[] cells;
+	public static Color[] selectableColors =
+	{
+		Color.white, Color.red, Color.yellow, Color.blue
+	};
+	public static Color[] transitionColors =
+	{
+        Color.white,
+        new Color(1, 1, 1),       // black
+		new Color(0.5f, 0, 1), // violet
+		new Color(1, 0.5f, 0), // orange
+		new Color(0, 1f, 0), // green
+	};
+
+	private Cell[] cells;
 
 	void Awake()
 	{
@@ -43,13 +56,43 @@ public class GrillaHexagonal : MonoBehaviour
     {
         Vector3 position = GetCellPosition(x, z);
 
-		cells[i] = Cell.CreateCell();
-		cells[i].transform.SetParent(transform, false);
-		cells[i].transform.localPosition = position;
+        cells[i] = Cell.CreateCell();
+        cells[i].transform.SetParent(transform, false);
+        cells[i].name += " " + i;
+        cells[i].transform.localPosition = position;
 
-		cells[i].coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
+        cells[i].coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
 
-		cells[i].SetMaterial();
+        cells[i].SetMaterial();
+
+        SetNeighbours(x, z, i);
+    }
+
+    private void SetNeighbours(int x, int z, int i)
+    {
+        if (x > 0)
+        {
+            cells[i].SetNeighbor(HexDirection.W, cells[i - 1]);
+        }
+        if (z > 0)
+        {
+            if ((z & 1) == 0)
+            {
+                cells[i].SetNeighbor(HexDirection.SE, cells[i - columns]);
+                if (x > 0)
+                {
+                    cells[i].SetNeighbor(HexDirection.SW, cells[i - columns - 1]);
+                }
+            }
+            else
+            {
+                cells[i].SetNeighbor(HexDirection.SW, cells[i - columns]);
+                if (x < columns - 1)
+                {
+                    cells[i].SetNeighbor(HexDirection.SE, cells[i - columns + 1]);
+                }
+            }
+        }
     }
 
     private static Vector3 GetCellPosition(int x, int z)
