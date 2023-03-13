@@ -45,6 +45,7 @@ public class Cell : MonoBehaviour
     private int colorIndex = 0;
 
     [SerializeField] private Cell[] neighbors = new Cell[6];
+    [SerializeField] private int[] neighborColors = new int[6];
 
     public MeshHexagonal hexMesh;
     private MeshRenderer meshRenderer;
@@ -86,22 +87,24 @@ public class Cell : MonoBehaviour
     {
         for (int i = 0; i < neighbors.Length; i++)
         {
-            Cell transition = neighbors[i];
+            Cell neighbor = neighbors[i];
 
-            if (transition == null)
+            if (neighbor == null)
                 continue;
 
-            if (transition.colorIndex == 0)
+            if (neighbor.colorIndex == 0)
             {
-                // Check next neighbor in same direction
-                Cell next = transition.neighbors[i];
-
-                if (next == null)
-                    continue;
-
-                if (OtherColor(next))
+                // Check neighboring cells
+                for (int j = 0; j < neighbor.neighbors.Length; j++)
                 {
-                    transition.meshRenderer.material.color = GetTransitionColor(colorIndex, next.colorIndex);
+                    Cell nextNeighbor = neighbor.neighbors[j];
+                    if (nextNeighbor == null)
+                        continue;
+
+                    if (OtherColor(nextNeighbor))
+                    {
+                        neighbor.meshRenderer.material.color = GetTransitionColor(colorIndex, nextNeighbor.colorIndex);
+                    }
                 }
             }
             // search other neighbors to see if there are 3 primary colors with same transition cell
